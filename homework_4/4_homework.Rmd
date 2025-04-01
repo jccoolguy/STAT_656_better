@@ -139,8 +139,9 @@ Now, find the CV minimizing lasso solution
 ```{r}
 require(glmnet)
 lassoOut     = cv.glmnet(X ,Y, alpha=1, standardize = FALSE) #Consider why we wouldn't standardize
-betaHatLasso = ####
-Slasso       = ####
+betaHatLasso = coef(lassoOut, s = lassoOut$lambda.min)
+Slasso       = glmnet(x = X, y = Y, alpha = 1, s = lassoOut$lambda.min, 
+                      standardize = FALSE)
 ```
 
 ### Problem 4.1.2. Refitted lasso
@@ -153,11 +154,11 @@ can see the lambda.1se solution.
 
 ```{r}
 plot(lassoOut)
-betaHatTemp     = ####
-Srefitted       = ####
+betaHatTemp     = coef(lassoOut, s = lassoOut$lambda.1se)[-1]
+Srefitted       = which(abs(betaHatTemp) > 1e-16)
 Xdf             = as.data.frame(X[,Srefitted])
-refittedOut     = ####
-betaHatRefitted = ####
+refittedOut     = lm(Y ~ ., data = Xdf)
+betaHatRefitted = coef(refittedOut)
 ```
 
 #### Answer 4.1.3
@@ -168,7 +169,7 @@ coefficients in the coefficient vector)?
 
 ```{r}
 cat('The selected genes from refitted lasso are: \n',
-     ####,'\n')
+     colnames(Xdf),'\n')
 ```
 
 ### Problem 4.1.4
@@ -180,14 +181,21 @@ coded) to this particular drug?
 #### Answer 4.1.4
 
 ```{r}
-####
+gene_ld_index = which.max(coef(refittedOut))
+gene_ld = coef(refittedOut)[gene_ld_index]
+gene_ld_label = names(coef(refittedOut)[gene_ld_index])
 ```
+
+The gene associated with the largest decrease in viral susceptibility is
+`r gene_ld_label`.
 
 #### Answer 4.1.5
 
 Interpret this estimated coefficient within the context of the problem
 
-'A change from no mutation to mutation is....'
+'A change from no mutation to mutation in gene `r gene_ld_label` is
+associated with an `r unname(gene_ld)` decrease in the log of
+suspecitivity to treatment holding all other features constant.'
 
 ## Problem 4.2. Prediction
 
@@ -237,12 +245,15 @@ YhatTestRidge = predict(ridgeOut, Xtest, s = 'lambda.min')
 
 Why is a boundary solution for minimizing CV an issue?
 
+A boundary solution isn't the true solution in minimizing CV error, we
+aren't exploring the full range of possible $\lambda$.
+
 ### Problem 4.2.2. Lasso
 
 We can use the previously computed lasso object to get the predictions
 
 ```{r}
-####
+YhatTestLasso = predict(lassoOut, Xtest, s = 'lambda.min')
 ```
 
 #### Answer 4.2.3. Refitted lasso
@@ -252,16 +263,16 @@ the 1se rule and then fit the least squares solution on the selected
 features.
 
 ```{r}
-YhatTestRefitted = ####
+YhatTestRefitted = predict(refittedOut, data.frame(Xtest))
 ```
 
 #### Answer 4.2.4. Getting the test errors
 
 ```{r}
 # Get the test error
-testErrorRidge    = mean(####)
-testErrorLasso    = ####
-testErrorRefitted = ####
+testErrorRidge    = mean((YhatTestRidge - Ytest)^2)
+testErrorLasso    = mean((YhatTestLasso - Ytest)^2)
+testErrorRefitted = mean((YhatTestRefitted - Ytest)^2)
 ```
 
 -   The test error from ridge w/ lambda chosen as lambda.min is
