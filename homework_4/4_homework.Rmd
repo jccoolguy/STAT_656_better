@@ -68,7 +68,7 @@ Each observation is a HIV virus which is grown for the purpose of the
 experiment.
 
 The supervisor is a measure of the likelihood of a virus being altered
-by a treatment.
+by a treatment, as the supervisor gets larger susceptibility decreases.
 
 # Problem 2 (10 pts)
 
@@ -104,12 +104,10 @@ doesn't look symmetric, we will still apply elastic net to it, as did
 the authors in that paper I included. We won't consider further
 transformations of the supervisor)
 
-This histogram indicates left skewness in the distribution of
-log-transformed susceptibility. The distribution also appears
-multi-modal. Both results complicate any approach that relies on
-estimating the expected value of the supervisor, as the mean is not an
-appropriate measure of central tendency in this case. Such approaches
-are any variation on multiple linear regression such as lasso
+The distribution appears multi-modal. This complicates any approach that
+relies on estimating the expected value of the supervisor, as the mean
+is not an appropriate measure of central tendency in this case. Such
+approaches are any variation on multiple linear regression such as lasso
 regression, ridge regression or, more generally, any elastic net
 setting.
 
@@ -194,8 +192,8 @@ The gene associated with the largest decrease in viral susceptibility is
 Interpret this estimated coefficient within the context of the problem
 
 'A change from no mutation to mutation in gene `r gene_ld_label` is
-associated with an `r unname(gene_ld)` decrease in the log of
-suspecitivity to treatment holding all other features constant.'
+associated with a `r unname(gene_ld)` percent decrease in susceptibility
+to treatment holding all other features constant.'
 
 ## Problem 4.2. Prediction
 
